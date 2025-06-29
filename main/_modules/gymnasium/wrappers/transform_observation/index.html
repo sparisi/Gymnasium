@@ -1124,7 +1124,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            env: The environment to wrap.</span>
-<span class="sd">            bins: int or list of ints (number of bins per dimension).</span>
+<span class="sd">            bins: int or tuple of ints (number of bins per dimension).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">observation_space</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
@@ -1158,17 +1158,28 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span> <span class="o">=</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">observation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Discretize the observation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Discretizes the observation.&quot;&quot;&quot;</span>
         <span class="c1"># np.digitize returns len(bins) if the input exceeds the last edge.</span>
         <span class="c1"># If an observation is exactly equal to the high bound, the resulting</span>
         <span class="c1"># index could be out of range for the number of bins.</span>
-        <span class="c1"># Solution: clip to ensure 0 &lt;= index &lt; bins[i].</span>
+        <span class="c1"># Solution: clip to ensure 0 &lt;= index &lt; bins[i], and add a small margin</span>
+        <span class="c1"># to prevent precision issues.</span>
+        <span class="n">clipped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">observation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">-</span> <span class="mf">1e-8</span><span class="p">)</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">obs_i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span><span class="p">])),</span> <span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">obs_i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">observation</span><span class="p">)</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">clipped</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dims</span><span class="p">)</span>
         <span class="p">]</span>
-        <span class="n">flat_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_indices</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">flat_index</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_indices</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">revert_observation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flat_index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reverts discretization. It returns the edges of the bin the discretized observation belongs to.&quot;&quot;&quot;</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unflatten_index</span><span class="p">(</span><span class="n">flat_index</span><span class="p">)</span>
+        <span class="n">lows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">highs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">lows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">highs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lows</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">highs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_flatten_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
         <span class="n">flat_index</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1176,6 +1187,13 @@
             <span class="n">flat_index</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="n">flat_index</span> <span class="o">+=</span> <span class="n">indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">flat_index</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_unflatten_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flat_index</span><span class="p">):</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">):</span>
+            <span class="n">indices</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">flat_index</span> <span class="o">%</span> <span class="n">b</span><span class="p">)</span>
+            <span class="n">flat_index</span> <span class="o">//=</span> <span class="n">b</span>
+        <span class="k">return</span> <span class="n">indices</span>
 </pre></div>
           </article>
         </div>
