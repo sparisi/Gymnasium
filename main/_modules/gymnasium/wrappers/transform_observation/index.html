@@ -1102,11 +1102,13 @@
 <span class="sd">    Example 2 - Discretize LunarLander observation space:</span>
 <span class="sd">        &gt;&gt;&gt; env = gym.make(&quot;LunarLander-v3&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; env.observation_space</span>
-<span class="sd">        Box([ -2.5  -2.5  -10.  -10.  -6.2831855 -10.  -0.  -0. ],</span>
-<span class="sd">            [  2.5   2.5   10.   10.   6.2831855  10.   1.   1. ], (8,), float32)</span>
+<span class="sd">        Box([ -2.5        -2.5       -10.        -10.         -6.2831855 -10.</span>
+<span class="sd">          -0.         -0.       ], [ 2.5        2.5       10.        10.         6.2831855 10.</span>
+<span class="sd">          1.         1.       ], (8,), float32)</span>
 <span class="sd">        &gt;&gt;&gt; obs, _ = env.reset(seed=42)</span>
 <span class="sd">        &gt;&gt;&gt; obs</span>
-<span class="sd">        array([ 0.00229702, 1.4181306, 0.2326471, 0.3204666 , -0.00265488, -0.05269805, 0., 0. ], dtype=float32)</span>
+<span class="sd">        array([ 0.00229702,  1.4181306 ,  0.2326471 ,  0.3204666 , -0.00265488,</span>
+<span class="sd">               -0.05269805,  0.        ,  0.        ], dtype=float32)</span>
 <span class="sd">        &gt;&gt;&gt; env = DiscretizeObservation(env, bins=10)</span>
 <span class="sd">        &gt;&gt;&gt; env.observation_space</span>
 <span class="sd">        Discrete(6561)</span>
