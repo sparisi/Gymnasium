@@ -586,7 +586,7 @@
 <span class="sd">        &gt;&gt;&gt; obs, *_ = env.step([-0.3, -0.5])</span>
 <span class="sd">        &gt;&gt;&gt; obs</span>
 <span class="sd">        array([ 0.99908342,  0.99948506,  0.04280567, -0.03208766,  0.10445588,</span>
-<span class="sd">        0.11442572, -1.18958125, -1.97979484,  0.1054461 , -0.10896341])</span>
+<span class="sd">                0.11442572, -1.18958125, -1.97979484,  0.1054461 , -0.10896341])</span>
 <span class="sd">        &gt;&gt;&gt; env = DiscretizeAction(env, bins=10)</span>
 <span class="sd">        &gt;&gt;&gt; env.action_space</span>
 <span class="sd">        Discrete(100)</span>
@@ -594,7 +594,7 @@
 <span class="sd">        &gt;&gt;&gt; obs, *_ = env.step(32)</span>
 <span class="sd">        &gt;&gt;&gt; obs</span>
 <span class="sd">        array([ 0.99908342,  0.99948506,  0.04280567, -0.03208766,  0.10445588,</span>
-<span class="sd">        0.11442572, -1.1895813 , -1.97979484,  0.1054461 , -0.10896341])</span>
+<span class="sd">                0.11442572, -1.1895813 , -1.97979484,  0.1054461 , -0.10896341])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -652,7 +652,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">bin_centers</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
         <span class="p">]</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">revert_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a continuous action to nearest discrete bin.&quot;&quot;&quot;</span>
